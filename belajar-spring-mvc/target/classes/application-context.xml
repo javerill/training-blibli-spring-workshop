@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+	xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+    xsi:schemaLocation=
+    	"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd"
+        >
+
+    <context:component-scan base-package="org.binus.intern.service, org.binus.intern.dao, org.binus.intern.entity" />
+    
+    <!-- <bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/student" />
+		<property name="username" value="root" />
+		<property name="password" value="" />
+	</bean> -->
+	
+	<!-- <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"> -->
+		<!-- <property name="dataSource" ref="dataSource" /> -->
+		<!-- <constructor-arg index = "0" ref="dataSource"/>
+	</bean> -->
+	
+	<!-- <bean id="studentDAO" class="org.binus.intern.dao.JdbcStudentDAO">
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
+	</bean> -->
+	
+	<!-- <bean id="springService" class="org.mockito.Mockito" factory-method="mock">
+    	<constructor-arg value="org.binus.intern.service.SpringService"/>
+	</bean> -->
+	
+	<!-- CARA 1: USING SESSION FACTORY (ORM - HIBERNATE CONCEPT) -->
+	
+	<!-- Hibernate 4 SessionFactory Bean Definition -->
+	<!--  <bean id="hibernate4AnnotatedSessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>org.binus.intern.entity.Mahasiswa</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect
+				</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+	</bean>-->
+
+	<!-- <tx:annotation-driven transaction-manager="transactionManager" /> -->
+	
+	<!-- Transaction Manager -->
+	<!-- <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean> -->
+	
+	<!-- CARA 2: USING ENTITY MANAGER WITH APACHE DBCP (ORM - HIBERNATE - SPRING DATA JPA CONCEPT) -->
+	
+	<bean id="dataSource" 
+		class="org.apache.commons.dbcp.BasicDataSource" 
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/student" /> <!-- student = database name -->
+		<property name="username" value="root" />
+		<property name="password" value="" />
+	</bean>
+	
+	<bean id="entityManagerFactory" 
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" 
+		p:dataSource-ref="dataSource"
+	 	p:packagesToScan="org.binus.intern.entity">
+	    <property name="jpaVendorAdapter">
+	         <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+	            <property name="showSql" value="true" />
+	            <property name="databasePlatform" value="org.hibernate.dialect.MySQLDialect" />
+	        </bean>
+	    </property>
+	</bean>
+	
+	 <!-- Transaction -->
+	 <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+	 	<property name="entityManagerFactory" ref="entityManagerFactory" />
+	 </bean>
+	 
+	 <!-- Enable the configuration of transactional behaviour based on annotations -->
+	 <tx:annotation-driven transaction-manager="transactionManager" />
+	 
+	 <jpa:repositories 
+	 	base-package="org.binus.intern.dao"
+        entity-manager-factory-ref="entityManagerFactory"
+        transaction-manager-ref="transactionManager" />
+        
+</beans>
